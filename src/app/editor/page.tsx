@@ -17,7 +17,12 @@ function EditorContent() {
 
   useEffect(() => {
     const modeParam = searchParams.get('mode')
-    if (modeParam === 'python' || modeParam === 'web') {
+    // Make sure 'logic' is included here!
+    if (
+      modeParam === 'python' ||
+      modeParam === 'web' ||
+      modeParam === 'logic'
+    ) {
       setMode(modeParam)
     }
   }, [searchParams, setMode])

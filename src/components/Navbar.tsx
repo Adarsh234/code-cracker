@@ -7,29 +7,24 @@ import {
   Terminal,
   Sparkles,
   Download,
+  ChevronDown,
+  Check,
 } from 'lucide-react'
-import { useCodeStore } from '@/store/useCodeStore'
+import { useCodeStore, SUPPORTED_LANGUAGES } from '@/store/useCodeStore'
 import { cn } from '@/lib/utils'
+import { useState } from 'react' // Need state for dropdown
 
 export default function Navbar() {
-  const { mode, setMode, runPython, code } = useCodeStore()
+  const { mode, setMode, language, setLanguage, runCode, code } = useCodeStore()
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-  // Function to handle file download
+  // Helper to find current language object
+  const currentLang = SUPPORTED_LANGUAGES.find((l) => l.id === language)
+
   const handleDownload = () => {
+    // ... (Keep existing Web download logic) ...
     if (mode === 'web') {
-      // Create a full HTML file with CSS and JS injected
-      const fullHtml = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <style>${code.css}</style>
-  </head>
-  <body>
-    ${code.html}
-    <script>${code.javascript}</script>
-  </body>
-</html>`
-
+      const fullHtml = `<!DOCTYPE html><html><head><style>${code.css}</style></head><body>${code.html}<script>${code.javascript}</script></body></html>`
       const blob = new Blob([fullHtml], { type: 'text/html' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -37,12 +32,16 @@ export default function Navbar() {
       a.download = 'index.html'
       a.click()
     } else {
-      // Download Python file
-      const blob = new Blob([code.python], { type: 'text/x-python' })
+      // Logic Mode Download
+      // Handle special mapping for JS node
+      const codeKey = language === 'javascript' ? 'javascript_node' : language
+      const content = code[codeKey as keyof typeof code]
+
+      const blob = new Blob([content], { type: 'text/plain' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'main.py'
+      a.download = currentLang?.file || 'code.txt'
       a.click()
     }
   }
@@ -60,75 +59,104 @@ export default function Navbar() {
           </div>
         </Link>
 
-        <div className="h-8 w-[1px] bg-gradient-to-b from-transparent via-gray-700 to-transparent mx-2 hidden sm:block"></div>
+        <div className="h-8 w-[1px] bg-gray-700 mx-2 hidden sm:block"></div>
 
-        {/* 2. Mode Switcher */}
+        {/* 2. Unified Mode Switcher */}
         <div className="flex bg-black/60 p-1.5 rounded-xl border border-white/10 shadow-inner">
+          {/* Web Button */}
           <button
             onClick={() => setMode('web')}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 relative overflow-hidden',
+              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all relative overflow-hidden',
               mode === 'web'
                 ? 'text-white shadow-lg shadow-blue-500/25'
-                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5',
+                : 'text-gray-500 hover:text-gray-300',
             )}
           >
             {mode === 'web' && (
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 -z-10" />
             )}
-            <Layers size={16} />
-            <span className="hidden sm:block">Web Editor</span>
+            <Layers size={16} /> <span className="hidden sm:block">Web</span>
           </button>
 
-          <button
-            onClick={() => setMode('python')}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 relative overflow-hidden',
-              mode === 'python'
-                ? 'text-white shadow-lg shadow-yellow-600/25'
-                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5',
+          {/* Logic/Language Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setMode('logic')
+                setIsDropdownOpen(!isDropdownOpen)
+              }}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all relative overflow-hidden',
+                mode === 'logic'
+                  ? 'text-white shadow-lg shadow-purple-600/25'
+                  : 'text-gray-500 hover:text-gray-300',
+              )}
+            >
+              {mode === 'logic' && (
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 -z-10" />
+              )}
+              <Terminal size={16} />
+              <span className="hidden sm:block">
+                {currentLang?.name || 'Logic'}
+              </span>
+              <ChevronDown
+                size={12}
+                className={cn(
+                  'transition-transform',
+                  isDropdownOpen && 'rotate-180',
+                )}
+              />
+            </button>
+
+            {/* The Dropdown Menu */}
+            {isDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+                <div className="absolute top-full right-0 mt-2 w-40 bg-[#1e1e1e] border border-white/10 rounded-xl shadow-xl overflow-hidden z-20 animate-in fade-in slide-in-from-top-2">
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.id}
+                      onClick={() => {
+                        setMode('logic')
+                        setLanguage(lang.id)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center justify-between"
+                    >
+                      {lang.name}
+                      {language === lang.id && (
+                        <Check size={14} className="text-purple-400" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
-          >
-            {mode === 'python' && (
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-600 to-orange-600 -z-10" />
-            )}
-            <Terminal size={16} />
-            <span className="hidden sm:block">Python Editor</span>
-          </button>
+          </div>
         </div>
       </div>
 
-      {/* 3. Right Section: Actions */}
+      {/* 3. Right Section */}
       <div className="flex items-center gap-3">
-        {/* DOWNLOAD BUTTON */}
         <button
           onClick={handleDownload}
           className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium border border-white/10 transition-all active:scale-95"
-          title="Download Code"
         >
-          <Download size={16} />
-          <span className="hidden sm:block">Save</span>
+          <Download size={16} /> <span className="hidden sm:block">Save</span>
         </button>
 
-        {mode === 'python' && (
+        {mode === 'logic' && (
           <button
-            onClick={runPython}
-            className="group relative flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-[0_0_20px_-5px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_-5px_rgba(34,197,94,0.6)] transition-all duration-300 active:scale-95 border border-white/10"
+            onClick={runCode}
+            className="group relative flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-[0_0_20px_-5px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_-5px_rgba(34,197,94,0.6)] transition-all active:scale-95 border border-white/10"
           >
-            <Play
-              size={16}
-              fill="currentColor"
-              className="group-hover:scale-110 transition-transform"
-            />
-            <span>Run Code</span>
-            <div className="absolute inset-0 -z-10 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 w-full h-full skew-x-12 blur-md" />
+            <Play size={16} fill="currentColor" />
+            <span>Run</span>
           </button>
-        )}
-
-        {mode === 'web' && (
-          <div className="hidden md:flex items-center gap-2 text-xs font-medium text-blue-400/80 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20">
-            <Sparkles size={12} /> Live Preview
-          </div>
         )}
       </div>
     </div>

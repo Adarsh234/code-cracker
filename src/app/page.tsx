@@ -39,7 +39,6 @@ export default function LandingPage() {
 
       {/* Navigation */}
       <nav className="border-b border-white/5 p-4 md:px-8 flex justify-between items-center backdrop-blur-xl sticky top-0 z-50 bg-black/10">
-        {/* Logo Area */}
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
           <div className="bg-gradient-to-tr from-blue-500 to-purple-500 p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
             <Code2 className="text-white" size={20} />
@@ -49,7 +48,7 @@ export default function LandingPage() {
           </span>
         </div>
 
-        {/* NEW: Center Navigation Links */}
+        {/* Center Navigation Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
           <Link
             href="/editor?mode=web"
@@ -58,10 +57,10 @@ export default function LandingPage() {
             <Layers size={16} /> Web Editor
           </Link>
           <Link
-            href="/editor?mode=python"
+            href="/editor?mode=logic"
             className="flex items-center gap-2 hover:text-yellow-400 transition-colors"
           >
-            <Terminal size={16} /> Python Editor
+            <Terminal size={16} /> Logic Editor
           </Link>
         </div>
 
@@ -111,14 +110,14 @@ export default function LandingPage() {
             </span>
           </motion.h1>
 
-          {/* Description */}
+          {/* UPDATED DESCRIPTION */}
           <motion.p
             variants={itemVariants}
             className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl leading-relaxed"
           >
             An advanced browser-based IDE supporting{' '}
             <strong className="text-blue-200">
-              HTML, CSS, JavaScript, and Python
+              HTML, CSS, JS, Python, C++, and Go
             </strong>
             . Experience real-time previews and instant logic execution without
             any setup.
@@ -142,7 +141,7 @@ export default function LandingPage() {
             </Link>
 
             <Link
-              href="https://github.com/Adarsh234/CodeCracker"
+              href="https://github.com/Adarsh234/code-cracker"
               target="_blank"
               className="inline-flex h-12 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-8 font-medium text-white transition-all hover:bg-white/10 hover:border-white/20 backdrop-blur-sm"
             >

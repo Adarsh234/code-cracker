@@ -1,52 +1,71 @@
 'use client'
-import { useCodeStore } from '@/store/useCodeStore'
-import { FileCode, FileJson, FileType, Code } from 'lucide-react'
+import { useCodeStore, SUPPORTED_LANGUAGES } from '@/store/useCodeStore'
 import { cn } from '@/lib/utils'
+import { FileCode, FileJson, FileType, File } from 'lucide-react'
 
 export default function FileTabs() {
-  const { activeFile, setActiveFile, mode } = useCodeStore()
+  const { mode, activeFile, setActiveFile, language } = useCodeStore()
 
-  if (mode === 'python')
-    return (
-      <div className="flex items-center gap-2 px-4 py-2 bg-[#1e1e1e] border-b border-gray-800 text-yellow-500 text-sm font-mono">
-        <Code size={14} /> main.py
-      </div>
-    )
-
-  const tabs = [
-    {
-      id: 'html',
-      label: 'index.html',
-      icon: <FileCode size={14} className="text-orange-500" />,
-    },
-    {
-      id: 'css',
-      label: 'style.css',
-      icon: <FileType size={14} className="text-blue-400" />,
-    },
-    {
-      id: 'javascript',
-      label: 'script.js',
-      icon: <FileJson size={14} className="text-yellow-400" />,
-    },
-  ] as const
+  // Get the filename for the current logic language (e.g., "main.py" or "main.cpp")
+  const currentLangObj = SUPPORTED_LANGUAGES.find((l) => l.id === language)
+  const logicFileName = currentLangObj ? currentLangObj.file : 'script.txt'
 
   return (
-    <div className="flex bg-[#18181b] border-b border-gray-800">
-      {tabs.map((tab) => (
+    <div className="flex items-center bg-[#1e1e1e] border-b border-white/5 overflow-x-auto no-scrollbar">
+      {/* ----------------- WEB MODE TABS ----------------- */}
+      {mode === 'web' && (
+        <>
+          <button
+            onClick={() => setActiveFile('html')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-r border-white/5 transition-colors min-w-[120px]',
+              activeFile === 'html'
+                ? 'bg-[#1e1e1e] text-orange-400 border-t-2 border-t-orange-400'
+                : 'bg-[#18181b] text-gray-500 hover:text-gray-300 hover:bg-[#1e1e1e]',
+            )}
+          >
+            <FileCode size={14} /> index.html
+          </button>
+
+          <button
+            onClick={() => setActiveFile('css')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-r border-white/5 transition-colors min-w-[120px]',
+              activeFile === 'css'
+                ? 'bg-[#1e1e1e] text-blue-400 border-t-2 border-t-blue-400'
+                : 'bg-[#18181b] text-gray-500 hover:text-gray-300 hover:bg-[#1e1e1e]',
+            )}
+          >
+            <FileType size={14} /> style.css
+          </button>
+
+          <button
+            onClick={() => setActiveFile('javascript')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-r border-white/5 transition-colors min-w-[120px]',
+              activeFile === 'javascript'
+                ? 'bg-[#1e1e1e] text-yellow-400 border-t-2 border-t-yellow-400'
+                : 'bg-[#18181b] text-gray-500 hover:text-gray-300 hover:bg-[#1e1e1e]',
+            )}
+          >
+            <FileJson size={14} /> script.js
+          </button>
+        </>
+      )}
+
+      {/* ----------------- LOGIC MODE TAB ----------------- */}
+      {mode === 'logic' && (
         <button
-          key={tab.id}
-          onClick={() => setActiveFile(tab.id)}
           className={cn(
-            'flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-r border-gray-800 transition-colors select-none',
-            activeFile === tab.id
-              ? 'bg-[#1e1e1e] text-white border-t-2 border-t-blue-500'
-              : 'text-gray-500 hover:bg-[#1e1e1e]/50 hover:text-gray-300 border-t-2 border-t-transparent',
+            'flex items-center gap-2 px-6 py-2.5 text-sm font-medium border-r border-white/5 bg-[#1e1e1e] text-purple-400 border-t-2 border-t-purple-400 min-w-[140px]',
           )}
         >
-          {tab.icon} {tab.label}
+          <File size={14} /> {logicFileName}
         </button>
-      ))}
+      )}
+
+      {/* Empty space filler */}
+      <div className="flex-1 bg-[#18181b] h-[41px] border-b border-white/5"></div>
     </div>
   )
 }
