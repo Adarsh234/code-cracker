@@ -8,8 +8,7 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/Adarsh234/code-cracker)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/fabeec2d-2177-42a1-b2c2-1bb1e945a1e1" />
-![CodeCracker Banner]
+![CodeCracker Banner](https://github.com/user-attachments/assets/fabeec2d-2177-42a1-b2c2-1bb1e945a1e1)
 **Code, Run, & Create Instantly.**
 
 CodeCracker is an advanced, browser-based Integrated Development Environment (IDE) built with **Next.js 15**. It features a modern, glassmorphism UI and supports both instant web development previews and server-side logic execution for multiple programming languages.
