@@ -17,13 +17,15 @@ function EditorContent() {
 
   useEffect(() => {
     const modeParam = searchParams.get('mode')
-    // Make sure 'logic' is included here!
-    if (
-      modeParam === 'python' ||
-      modeParam === 'web' ||
-      modeParam === 'logic'
-    ) {
-      setMode(modeParam)
+
+    // STRICT TYPE CHECK (Essential for Vercel Build)
+    // If the URL says 'web', set mode to 'web'
+    if (modeParam === 'web') {
+      setMode('web')
+    }
+    // If URL says 'logic' OR 'python' (legacy), we must strictly pass 'logic'
+    else if (modeParam === 'logic' || modeParam === 'python') {
+      setMode('logic')
     }
   }, [searchParams, setMode])
 
@@ -33,8 +35,7 @@ function EditorContent() {
 
       {/* Main Workspace Area with Resizable Panels */}
       <div className="flex-1 relative overflow-hidden">
-        {/* 'auto' makes it switch to vertical stack on mobile automatically if supported, 
-            but for explicit control we stick to horizontal for desktop-like feel or implement a media query check */}
+        {/* 'autoSaveId' remembers your layout preference if you refresh */}
         <PanelGroup direction="horizontal" autoSaveId="persistence">
           {/* LEFT PANE: Editor */}
           <Panel
@@ -50,7 +51,7 @@ function EditorContent() {
             </div>
           </Panel>
 
-          {/* RESIZER HANDLE */}
+          {/* RESIZER HANDLE (The draggable bar) */}
           <PanelResizeHandle className="w-2 bg-[#0a0a0a] hover:bg-blue-600 transition-colors flex items-center justify-center cursor-col-resize group z-50">
             <div className="h-8 w-1 rounded-full bg-white/20 group-hover:bg-white transition-colors"></div>
           </PanelResizeHandle>
@@ -61,7 +62,7 @@ function EditorContent() {
             minSize={20}
             className="flex flex-col bg-[#0a0a0a] relative"
           >
-            {/* Subtle Inner Shadow */}
+            {/* Subtle Inner Shadow for Depth */}
             <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/20 to-transparent z-10 pointer-events-none"></div>
 
             {mode === 'web' ? <WebPreview /> : <OutputPanel />}
