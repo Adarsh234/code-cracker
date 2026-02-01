@@ -1,14 +1,14 @@
 # CodeCracker v2 🚀
 
-![GitHub language count](https://img.shields.io/github/languages/count/Adarsh234/CodeCracker)
-![GitHub top language](https://img.shields.io/github/languages/top/Adarsh234/CodeCracker)
+![GitHub language count](https://img.shields.io/github/languages/count/Adarsh234/code-cracker)
+![GitHub top language](https://img.shields.io/github/languages/top/Adarsh234/code-cracker)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat&logo=tailwind-css)
 ![Vercel Deploy](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)
-![GitHub last commit](https://img.shields.io/github/last-commit/Adarsh234/CodeCracker)
+![GitHub last commit](https://img.shields.io/github/last-commit/Adarsh234/code-cracker)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-![CodeCracker Banner](https://via.placeholder.com/1200x400.png?text=CodeCracker+v2+Preview)
+![CodeCracker Banner](https://via.placeholder.com/1200x400.png?text=code-cracker+v2+Preview)
 **Code, Run, & Create Instantly.**
 
 CodeCracker is an advanced, browser-based Integrated Development Environment (IDE) built with **Next.js 15**. It features a modern, glassmorphism UI and supports both instant web development previews and server-side logic execution for multiple programming languages.
