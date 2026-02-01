@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'CodeCracker v2',
-  description: 'Advanced Web & Python Editor',
+  title: 'CodeCracker',
+  description: 'Advanced Web & Logical Editor(Python, C++, Java, Node.js, Go)',
 }
 
 export default function RootLayout({
