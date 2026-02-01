@@ -1,15 +1,55 @@
 'use client'
 import Link from 'next/link'
-import { Play, ArrowLeft, Layers, Terminal, Sparkles } from 'lucide-react'
+import {
+  Play,
+  ArrowLeft,
+  Layers,
+  Terminal,
+  Sparkles,
+  Download,
+} from 'lucide-react'
 import { useCodeStore } from '@/store/useCodeStore'
 import { cn } from '@/lib/utils'
 
 export default function Navbar() {
-  const { mode, setMode, runPython } = useCodeStore()
+  const { mode, setMode, runPython, code } = useCodeStore()
+
+  // Function to handle file download
+  const handleDownload = () => {
+    if (mode === 'web') {
+      // Create a full HTML file with CSS and JS injected
+      const fullHtml = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>${code.css}</style>
+  </head>
+  <body>
+    ${code.html}
+    <script>${code.javascript}</script>
+  </body>
+</html>`
+
+      const blob = new Blob([fullHtml], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'index.html'
+      a.click()
+    } else {
+      // Download Python file
+      const blob = new Blob([code.python], { type: 'text/x-python' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'main.py'
+      a.click()
+    }
+  }
 
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/10 text-white shadow-2xl z-50 shrink-0 relative">
-      {/* 1. Left Section: Navigation & Branding */}
+      {/* 1. Left Section */}
       <div className="flex items-center gap-6">
         <Link
           href="/"
@@ -22,7 +62,7 @@ export default function Navbar() {
 
         <div className="h-8 w-[1px] bg-gradient-to-b from-transparent via-gray-700 to-transparent mx-2 hidden sm:block"></div>
 
-        {/* 2. Mode Switcher (The Pill) */}
+        {/* 2. Mode Switcher */}
         <div className="flex bg-black/60 p-1.5 rounded-xl border border-white/10 shadow-inner">
           <button
             onClick={() => setMode('web')}
@@ -33,7 +73,6 @@ export default function Navbar() {
                 : 'text-gray-500 hover:text-gray-300 hover:bg-white/5',
             )}
           >
-            {/* Active Background Gradient */}
             {mode === 'web' && (
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 -z-10" />
             )}
@@ -60,7 +99,17 @@ export default function Navbar() {
       </div>
 
       {/* 3. Right Section: Actions */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        {/* DOWNLOAD BUTTON */}
+        <button
+          onClick={handleDownload}
+          className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium border border-white/10 transition-all active:scale-95"
+          title="Download Code"
+        >
+          <Download size={16} />
+          <span className="hidden sm:block">Save</span>
+        </button>
+
         {mode === 'python' && (
           <button
             onClick={runPython}
@@ -72,16 +121,13 @@ export default function Navbar() {
               className="group-hover:scale-110 transition-transform"
             />
             <span>Run Code</span>
-
-            {/* Shine Effect */}
             <div className="absolute inset-0 -z-10 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 w-full h-full skew-x-12 blur-md" />
           </button>
         )}
 
-        {/* Decorative Indicator (Optional) */}
         {mode === 'web' && (
           <div className="hidden md:flex items-center gap-2 text-xs font-medium text-blue-400/80 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20">
-            <Sparkles size={12} /> Live Preview Active
+            <Sparkles size={12} /> Live Preview
           </div>
         )}
       </div>

@@ -1,7 +1,9 @@
 'use client'
 import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Loader2, Code2 } from 'lucide-react' // Icons for the loading screen
+import { Loader2, Code2 } from 'lucide-react'
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels' // NEW IMPORTS
+
 import Navbar from '@/components/Navbar'
 import FileTabs from '@/components/FileTabs'
 import CodeEditor from '@/components/CodeEditor'
@@ -14,7 +16,6 @@ function EditorContent() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Check if the URL has ?mode=python or ?mode=web
     const modeParam = searchParams.get('mode')
     if (modeParam === 'python' || modeParam === 'web') {
       setMode(modeParam)
@@ -25,41 +26,52 @@ function EditorContent() {
     <main className="h-screen flex flex-col bg-[#0a0a0a] text-white overflow-hidden font-sans selection:bg-blue-500/30">
       <Navbar />
 
-      {/* Main Workspace Area */}
-      <div className="flex-1 flex flex-col md:flex-row h-full relative overflow-hidden">
-        {/* LEFT PANE: Editor & Tabs */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full border-r border-white/5 flex flex-col bg-[#1e1e1e] relative">
-          {/* Tab Bar Area */}
-          <div className="shrink-0 z-10 shadow-sm">
-            <FileTabs />
-          </div>
+      {/* Main Workspace Area with Resizable Panels */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* 'auto' makes it switch to vertical stack on mobile automatically if supported, 
+            but for explicit control we stick to horizontal for desktop-like feel or implement a media query check */}
+        <PanelGroup direction="horizontal" autoSaveId="persistence">
+          {/* LEFT PANE: Editor */}
+          <Panel
+            defaultSize={50}
+            minSize={20}
+            className="flex flex-col bg-[#1e1e1e] border-r border-white/5 relative"
+          >
+            <div className="shrink-0 z-10 shadow-sm">
+              <FileTabs />
+            </div>
+            <div className="flex-1 relative min-h-0">
+              <CodeEditor />
+            </div>
+          </Panel>
 
-          {/* Editor Area */}
-          <div className="flex-1 relative min-h-0">
-            <CodeEditor />
-          </div>
-        </div>
+          {/* RESIZER HANDLE */}
+          <PanelResizeHandle className="w-2 bg-[#0a0a0a] hover:bg-blue-600 transition-colors flex items-center justify-center cursor-col-resize group z-50">
+            <div className="h-8 w-1 rounded-full bg-white/20 group-hover:bg-white transition-colors"></div>
+          </PanelResizeHandle>
 
-        {/* RIGHT PANE: Live Preview OR Output */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[#0a0a0a] flex flex-col relative">
-          {/* Subtle Inner Shadow for Depth */}
-          <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/20 to-transparent z-10 pointer-events-none"></div>
+          {/* RIGHT PANE: Preview / Output */}
+          <Panel
+            defaultSize={50}
+            minSize={20}
+            className="flex flex-col bg-[#0a0a0a] relative"
+          >
+            {/* Subtle Inner Shadow */}
+            <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/20 to-transparent z-10 pointer-events-none"></div>
 
-          {mode === 'web' ? <WebPreview /> : <OutputPanel />}
-        </div>
+            {mode === 'web' ? <WebPreview /> : <OutputPanel />}
+          </Panel>
+        </PanelGroup>
       </div>
     </main>
   )
 }
 
-// 2. Custom Loading Screen Component
 function LoadingScreen() {
   return (
     <div className="h-screen w-full bg-[#0a0a0a] text-white flex flex-col items-center justify-center gap-4">
       <div className="relative flex items-center justify-center">
-        {/* Pulsing Outer Ring */}
         <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping blur-xl"></div>
-        {/* Logo */}
         <div className="bg-gradient-to-tr from-blue-600 to-purple-600 p-4 rounded-2xl shadow-2xl relative z-10">
           <Code2 size={40} className="animate-pulse" />
         </div>
