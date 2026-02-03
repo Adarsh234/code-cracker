@@ -14,6 +14,7 @@ interface CodeStore {
   mode: 'web' | 'logic'
   language: string
   activeFile: string
+  stdin: string // Input support
 
   code: {
     html: string
@@ -30,20 +31,21 @@ interface CodeStore {
   setMode: (mode: 'web' | 'logic') => void
   setLanguage: (lang: string) => void
   setActiveFile: (file: string) => void
+  setStdin: (value: string) => void
   updateCode: (field: string, value: string) => void
   runCode: () => void
 }
 
-// 2. Logic Boilerplates
+// 2. Logic Boilerplates (Interactive)
 const BOILERPLATES = {
-  python: `def greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("CodeCracker"))\n\n# Try changing the message above!`,
+  python: `name = input("What is your name? ")\nprint(f"Hello, {name}!")\n\n# Type a name in the Input box and click Run!`,
   javascript_node: `console.log("Hello from Node.js environment!");\n\nconst numbers = [1, 2, 3, 4, 5];\nconst sum = numbers.reduce((a, b) => a + b, 0);\nconsole.log("Sum:", sum);`,
-  cpp: `#include <iostream>\n\nint main() {\n    std::cout << "Hello from C++!" << std::endl;\n    return 0;\n}`,
-  java: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from Java!");\n    }\n}`,
-  go: `package main\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Go!")\n}`,
+  cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    string name;\n    cout << "Enter your name: ";\n    cin >> name;\n    cout << "Hello " << name << " from C++!" << endl;\n    return 0;\n}`,
+  java: `import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        System.out.println("Enter your name: ");\n        if(scanner.hasNext()) {\n            String name = scanner.next();\n            System.out.println("Hello " + name + " from Java!");\n        }\n    }\n}`,
+  go: `package main\nimport "fmt"\n\nfunc main() {\n    var name string\n    fmt.Println("Enter your name: ")\n    fmt.Scanln(&name)\n    fmt.Println("Hello", name, "from Go!")\n}`,
 }
 
-// 3. Rich Web Boilerplate (Restored)
+// 3. Rich Web Boilerplate (Restored from your snippet)
 const WEB_BOILERPLATE = {
   html: `<div class="container">
   <h1>Welcome to <br/><span>CodeCracker</span></h1>
@@ -107,6 +109,7 @@ export const useCodeStore = create<CodeStore>()(
       mode: 'web',
       language: 'python',
       activeFile: 'html',
+      stdin: '', // Initialize Input
 
       code: {
         // Load the Rich Web Boilerplate
@@ -127,12 +130,13 @@ export const useCodeStore = create<CodeStore>()(
       setMode: (mode) => set({ mode }),
       setLanguage: (language) => set({ language }),
       setActiveFile: (activeFile) => set({ activeFile }),
+      setStdin: (stdin) => set({ stdin }),
 
       updateCode: (field, value) =>
         set((state) => ({ code: { ...state.code, [field]: value } })),
 
       runCode: async () => {
-        const { language, code } = get()
+        const { language, code, stdin } = get()
         set({ output: `> Preparing ${language} environment...` })
 
         const langConfig = SUPPORTED_LANGUAGES.find((l) => l.id === language)
@@ -151,6 +155,7 @@ export const useCodeStore = create<CodeStore>()(
                 language: langConfig.id,
                 version: langConfig.version,
                 files: [{ content: sourceCode }],
+                stdin: stdin, // Send Input
               }),
             },
           )
@@ -170,12 +175,13 @@ export const useCodeStore = create<CodeStore>()(
       },
     }),
     {
-      // CRITICAL FIX: Changed name to 'v2' to force a reset of user's local storage
-      name: 'code-cracker-storage-v2',
+      // Updated to v4 to ensure everything (UI + Boilerplates) reloads fresh
+      name: 'code-cracker-storage-v4',
       partialize: (state) => ({
         code: state.code,
         mode: state.mode,
         language: state.language,
+        stdin: state.stdin,
       }),
     },
   ),
