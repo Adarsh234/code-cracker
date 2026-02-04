@@ -9,8 +9,16 @@ import {
   Globe,
   Layers,
   Terminal,
+  Check,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import {
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
 
 export default function LandingPage() {
   const containerVariants: any = {
@@ -48,7 +56,7 @@ export default function LandingPage() {
           </span>
         </div>
 
-        {/* Center Navigation Links */}
+        {/* Center Links (Hidden on mobile) */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
           <Link
             href="/editor?mode=web"
@@ -64,15 +72,40 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* GitHub Link */}
-        <div className="flex gap-4">
+        {/* Right Section: Auth & Socials */}
+        <div className="flex items-center gap-4">
           <Link
             href="https://github.com/Adarsh234"
             target="_blank"
-            className="text-gray-400 hover:text-white transition-colors hover:scale-110 transform duration-200"
+            className="text-gray-400 hover:text-white transition-colors hover:scale-110 transform duration-200 hidden sm:block"
           >
             <Github size={22} />
           </Link>
+
+          <div className="h-6 w-[1px] bg-white/10 hidden sm:block"></div>
+
+          {/* AUTH STATUS */}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-200 transition-colors">
+                Sign Up
+              </button>
+            </SignUpButton>
+          </SignedOut>
+
+          <SignedIn>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: { avatarBox: 'w-8 h-8 border border-white/20' },
+              }}
+            />
+          </SignedIn>
         </div>
       </nav>
 
@@ -93,7 +126,7 @@ export default function LandingPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
             </span>
-            <span>v2.0 Now Available</span>
+            <span>v2.0 Now Available with Cloud Sync</span>
           </motion.div>
 
           {/* Heading */}
@@ -110,7 +143,6 @@ export default function LandingPage() {
             </span>
           </motion.h1>
 
-          {/* UPDATED DESCRIPTION */}
           <motion.p
             variants={itemVariants}
             className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl leading-relaxed"
@@ -119,33 +151,48 @@ export default function LandingPage() {
             <strong className="text-blue-200">
               HTML, CSS, JS, Python, C++, and Go
             </strong>
-            . Experience real-time previews and instant logic execution without
-            any setup.
+            . Now with{' '}
+            <strong className="text-purple-300">Cloud Persistence</strong> and
+            real-time execution.
           </motion.p>
 
-          {/* Buttons */}
+          {/* DYNAMIC CTA BUTTONS */}
           <motion.div
             variants={itemVariants}
             className="flex flex-col sm:flex-row gap-5"
           >
-            <Link
-              href="/editor?mode=web"
-              className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-lg bg-blue-600 px-8 font-medium text-white transition-all duration-300 hover:bg-blue-700 hover:shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)]"
-            >
-              <span className="mr-2">Start Coding</span>
-              <ArrowRight
-                className="transition-transform group-hover:translate-x-1"
-                size={18}
-              />
-              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shine" />
-            </Link>
+            <SignedIn>
+              <Link
+                href="/editor?mode=web"
+                className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-lg bg-blue-600 px-8 font-medium text-white transition-all duration-300 hover:bg-blue-700 hover:shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)]"
+              >
+                <span className="mr-2">Go to Editor</span>
+                <ArrowRight
+                  className="transition-transform group-hover:translate-x-1"
+                  size={18}
+                />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-shine" />
+              </Link>
+            </SignedIn>
+
+            <SignedOut>
+              <SignUpButton mode="modal">
+                <button className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-lg bg-white px-8 font-bold text-black transition-all duration-300 hover:bg-gray-200 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                  <span className="mr-2">Start Coding for Free</span>
+                  <ArrowRight
+                    className="transition-transform group-hover:translate-x-1"
+                    size={18}
+                  />
+                </button>
+              </SignUpButton>
+            </SignedOut>
 
             <Link
               href="https://github.com/Adarsh234/code-cracker"
               target="_blank"
               className="inline-flex h-12 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-8 font-medium text-white transition-all hover:bg-white/10 hover:border-white/20 backdrop-blur-sm"
             >
-              View on GitHub
+              <Github className="mr-2" size={18} /> Star on GitHub
             </Link>
           </motion.div>
         </motion.div>

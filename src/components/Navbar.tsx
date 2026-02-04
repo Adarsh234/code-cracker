@@ -8,22 +8,57 @@ import {
   Download,
   ChevronDown,
   Check,
-  Settings, // <--- NEW IMPORT
+  Settings,
+  Cloud,
+  Loader2, // Import Loader
 } from 'lucide-react'
 import { useCodeStore, SUPPORTED_LANGUAGES } from '@/store/useCodeStore'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
-import SettingsModal from './SettingsModal' // <--- NEW IMPORT
+import { useState, useEffect } from 'react'
+import SettingsModal from './SettingsModal'
+import {
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useUser,
+} from '@clerk/nextjs'
 
 export default function Navbar() {
-  const { mode, setMode, language, setLanguage, runCode, code } = useCodeStore()
+  const {
+    mode,
+    setMode,
+    language,
+    setLanguage,
+    runCode,
+    code,
+    saveToCloud,
+    loadFromCloud,
+    isSaving,
+  } = useCodeStore()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false) // <--- NEW STATE
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
-  // Helper to find current language object
+  // Get the Clerk User
+  const { user, isLoaded } = useUser()
+
+  // Load from Cloud when user logs in
+  useEffect(() => {
+    if (isLoaded && user) {
+      loadFromCloud(user.id)
+    }
+  }, [isLoaded, user, loadFromCloud])
+
   const currentLang = SUPPORTED_LANGUAGES.find((l) => l.id === language)
 
+  const handleManualSave = () => {
+    if (user) {
+      saveToCloud(user.id)
+    }
+  }
+
   const handleDownload = () => {
+    // ... (Keep existing download logic) ...
     if (mode === 'web') {
       const fullHtml = `<!DOCTYPE html><html><head><style>${code.css}</style></head><body>${code.html}<script>${code.javascript}</script></body></html>`
       const blob = new Blob([fullHtml], { type: 'text/html' })
@@ -35,7 +70,6 @@ export default function Navbar() {
     } else {
       const codeKey = language === 'javascript' ? 'javascript_node' : language
       const content = code[codeKey as keyof typeof code]
-
       const blob = new Blob([content], { type: 'text/plain' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -47,7 +81,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* RENDER SETTINGS MODAL */}
       {isSettingsOpen && (
         <SettingsModal onClose={() => setIsSettingsOpen(false)} />
       )}
@@ -63,12 +96,10 @@ export default function Navbar() {
               <ArrowLeft size={18} />
             </div>
           </Link>
-
           <div className="h-8 w-[1px] bg-gray-700 mx-2 hidden sm:block"></div>
 
-          {/* 2. Unified Mode Switcher */}
+          {/* Mode Switcher */}
           <div className="flex bg-black/60 p-1.5 rounded-xl border border-white/10 shadow-inner">
-            {/* Web Button */}
             <button
               onClick={() => setMode('web')}
               className={cn(
@@ -84,7 +115,6 @@ export default function Navbar() {
               <Layers size={16} /> <span className="hidden sm:block">Web</span>
             </button>
 
-            {/* Logic/Language Dropdown */}
             <div className="relative">
               <button
                 onClick={() => {
@@ -114,7 +144,6 @@ export default function Navbar() {
                 />
               </button>
 
-              {/* The Dropdown Menu */}
               {isDropdownOpen && (
                 <>
                   <div
@@ -147,7 +176,6 @@ export default function Navbar() {
 
         {/* 3. Right Section */}
         <div className="flex items-center gap-3">
-          {/* NEW: Settings Button */}
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors border border-transparent hover:border-white/5"
@@ -158,15 +186,64 @@ export default function Navbar() {
 
           <button
             onClick={handleDownload}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium border border-white/10 transition-all active:scale-95"
+            className="hidden md:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium border border-white/10 transition-all active:scale-95"
+            title="Download Local Copy"
           >
-            <Download size={16} /> <span className="hidden sm:block">Save</span>
+            <Download size={16} />{' '}
+            <span className="hidden lg:block">Local Save</span>
           </button>
+
+          <div className="ml-1 pl-3 border-l border-white/10 flex items-center gap-3">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              {/* CLOUD SAVE INDICATOR / BUTTON */}
+              <button
+                onClick={handleManualSave}
+                disabled={isSaving}
+                className="hidden md:flex flex-col items-end mr-1 cursor-pointer hover:bg-white/5 p-1 rounded transition-colors group"
+                title="Click to Save to Cloud"
+              >
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider group-hover:text-blue-400 transition-colors">
+                  {isSaving ? 'Syncing...' : 'Cloud Sync'}
+                </span>
+                <span
+                  className={cn(
+                    'text-[10px] flex items-center gap-1',
+                    isSaving ? 'text-blue-400' : 'text-green-400',
+                  )}
+                >
+                  {isSaving ? (
+                    <Loader2 size={10} className="animate-spin" />
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  )}
+                  {isSaving ? 'Saving...' : 'Active'}
+                </span>
+              </button>
+
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox:
+                      'w-9 h-9 border-2 border-white/10 hover:border-blue-500/50 transition-colors',
+                  },
+                }}
+              />
+            </SignedIn>
+          </div>
 
           {mode === 'logic' && (
             <button
               onClick={runCode}
-              className="group relative flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-[0_0_20px_-5px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_-5px_rgba(34,197,94,0.6)] transition-all active:scale-95 border border-white/10"
+              className="ml-2 group relative flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-[0_0_20px_-5px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_-5px_rgba(34,197,94,0.6)] transition-all active:scale-95 border border-white/10"
             >
               <Play size={16} fill="currentColor" />
               <span>Run</span>

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { supabase } from '@/lib/supabase'
 
 export const SUPPORTED_LANGUAGES = [
   { id: 'python', name: 'Python', version: '3.10.0', file: 'main.py' },
@@ -33,6 +34,7 @@ interface CodeStore {
     go: string
   }
   output: string
+  isSaving: boolean
 
   setMode: (mode: 'web' | 'logic') => void
   setLanguage: (lang: string) => void
@@ -45,6 +47,8 @@ interface CodeStore {
 
   runCode: () => void
   clearOutput: () => void
+  saveToCloud: (userId: string) => Promise<void>
+  loadFromCloud: (userId: string) => Promise<void>
 }
 
 // 2. Logic Boilerplates (Interactive)
@@ -143,6 +147,7 @@ export const useCodeStore = create<CodeStore>()(
       },
 
       output: '',
+      isSaving: false,
 
       setMode: (mode) => set({ mode }),
       setLanguage: (language) => set({ language }),
@@ -193,6 +198,50 @@ export const useCodeStore = create<CodeStore>()(
           }
         } catch (error) {
           set({ output: '> Error: Failed to connect to server.' })
+        }
+      },
+
+      saveToCloud: async (userId: string) => {
+        set({ isSaving: true })
+        const { code, mode, language } = get()
+
+        try {
+          const { error } = await supabase.from('workspaces').upsert({
+            user_id: userId,
+            code: code,
+            mode: mode,
+            language: language,
+            updated_at: new Date(),
+          })
+
+          if (error) throw error
+          // Optional: Add a toast notification here "Saved!"
+        } catch (error) {
+          console.error('Error saving to cloud:', error)
+        } finally {
+          set({ isSaving: false })
+        }
+      },
+
+      loadFromCloud: async (userId: string) => {
+        try {
+          const { data, error } = await supabase
+            .from('workspaces')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+
+          if (error && error.code !== 'PGRST116') throw error // Ignore 'not found' error
+
+          if (data) {
+            set({
+              code: data.code, // Load the saved code
+              mode: data.mode,
+              language: data.language,
+            })
+          }
+        } catch (error) {
+          console.error('Error loading from cloud:', error)
         }
       },
     }),
