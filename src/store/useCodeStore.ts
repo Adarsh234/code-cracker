@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-// 1. Supported Languages
 export const SUPPORTED_LANGUAGES = [
   { id: 'python', name: 'Python', version: '3.10.0', file: 'main.py' },
   { id: 'javascript', name: 'Node.js', version: '18.15.0', file: 'index.js' },
@@ -14,7 +13,14 @@ interface CodeStore {
   mode: 'web' | 'logic'
   language: string
   activeFile: string
-  stdin: string // Input support
+  stdin: string
+
+  // NEW: Editor Settings
+  settings: {
+    fontSize: number
+    wordWrap: 'on' | 'off'
+    minimap: boolean
+  }
 
   code: {
     html: string
@@ -32,9 +38,13 @@ interface CodeStore {
   setLanguage: (lang: string) => void
   setActiveFile: (file: string) => void
   setStdin: (value: string) => void
-  clearOutput: () => void
   updateCode: (field: string, value: string) => void
+
+  // NEW: Update Settings
+  updateSettings: (key: keyof CodeStore['settings'], value: any) => void
+
   runCode: () => void
+  clearOutput: () => void
 }
 
 // 2. Logic Boilerplates (Interactive)
@@ -112,6 +122,12 @@ export const useCodeStore = create<CodeStore>()(
       activeFile: 'html',
       stdin: '', // Initialize Input
 
+      settings: {
+        fontSize: 14,
+        wordWrap: 'on',
+        minimap: false,
+      },
+
       code: {
         // Load the Rich Web Boilerplate
         html: WEB_BOILERPLATE.html,
@@ -132,6 +148,9 @@ export const useCodeStore = create<CodeStore>()(
       setLanguage: (language) => set({ language }),
       setActiveFile: (activeFile) => set({ activeFile }),
       setStdin: (stdin) => set({ stdin }),
+
+      updateSettings: (key, value) =>
+        set((state) => ({ settings: { ...state.settings, [key]: value } })),
 
       clearOutput: () => set({ output: '' }),
 
@@ -179,12 +198,13 @@ export const useCodeStore = create<CodeStore>()(
     }),
     {
       // Updated to v4 to ensure everything (UI + Boilerplates) reloads fresh
-      name: 'code-cracker-storage-v4',
+      name: 'code-cracker-storage-v5',
       partialize: (state) => ({
         code: state.code,
         mode: state.mode,
         language: state.language,
         stdin: state.stdin,
+        settings: state.settings,
       }),
     },
   ),

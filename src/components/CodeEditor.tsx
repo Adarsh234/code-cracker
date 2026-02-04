@@ -5,17 +5,16 @@ import { useCodeStore } from '@/store/useCodeStore'
 import { Wand2 } from 'lucide-react'
 
 export default function CodeEditor() {
-  const { mode, language, activeFile, code, updateCode } = useCodeStore()
+  // 1. Get 'settings' from the store
+  const { mode, language, activeFile, code, updateCode, settings } =
+    useCodeStore()
 
-  // 1. Create a reference to hold the editor instance
   const editorRef = useRef<any>(null)
 
-  // 2. Capture the editor when it loads
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor
   }
 
-  // 3. Function to trigger the built-in formatter
   const handleFormat = () => {
     if (editorRef.current) {
       editorRef.current.getAction('editor.action.formatDocument')?.run()
@@ -39,11 +38,8 @@ export default function CodeEditor() {
     }
   } else {
     // Logic Mode
-    // Mapping store keys (like 'javascript_node') to values
     const codeKey = language === 'javascript' ? 'javascript_node' : language
     currentCode = code[codeKey as keyof typeof code] || ''
-
-    // Mapping for Monaco Syntax Highlighting
     currentLang = language === 'javascript' ? 'javascript' : language
   }
 
@@ -56,8 +52,12 @@ export default function CodeEditor() {
     }
   }
 
+  // 2. Define settings with fallbacks (prevents crash if settings are undefined)
+  const fontSize = settings?.fontSize || 14
+  const wordWrap = settings?.wordWrap || 'on'
+  const showMinimap = settings?.minimap || false
+
   return (
-    // Added 'relative' and 'group' classes here for the floating button
     <div className="h-full w-full bg-[#1e1e1e] relative group">
       {/* FORMAT BUTTON (Hidden by default, appears on hover) */}
       <button
@@ -74,16 +74,18 @@ export default function CodeEditor() {
         theme="vs-dark"
         value={currentCode}
         onChange={handleChange}
-        onMount={handleEditorDidMount} // Attach the reference here
+        onMount={handleEditorDidMount}
+        // 3. Pass the settings to the Monaco Editor options
         options={{
-          minimap: { enabled: false },
-          fontSize: 14,
+          minimap: { enabled: showMinimap }, // dynamic
+          fontSize: fontSize, // dynamic
+          wordWrap: wordWrap, // dynamic
           padding: { top: 16 },
           fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
           fontLigatures: true,
           scrollBeyondLastLine: false,
           automaticLayout: true,
-          tabSize: 2, // Added for better formatting
+          tabSize: 2,
         }}
       />
     </div>
