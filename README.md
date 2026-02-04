@@ -9,21 +9,24 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ![CodeCracker Banner](https://github.com/user-attachments/assets/fabeec2d-2177-42a1-b2c2-1bb1e945a1e1)
+
 **Code, Run, & Create Instantly.**
 
-CodeCracker is an advanced, browser-based Integrated Development Environment (IDE) built with **Next.js 15**. It features a modern, glassmorphism UI and supports both instant web development previews and server-side logic execution for multiple programming languages.
+CodeCracker is an advanced, browser-based Integrated Development Environment (IDE) built with **Next.js 15**. It features a modern glassmorphism UI, real-time cloud synchronization, and supports both instant web previews and server-side logic execution for multiple programming languages.
 
 ## ✨ Features
 
 ### 🌐 Dual-Mode Environment
-
 - **Web Editor:** Real-time environment for **HTML, CSS, and JavaScript**. Changes are reflected instantly in a crash-proof live preview pane.
-- **Logic Editor:** A powerful environment to write and execute backend logic.
+- **Logic Editor:** A powerful environment to write and execute backend logic with **Standard Input (Stdin)** support for interactive programs.
+
+### ☁️ Cloud & Auth (New!)
+- **User Authentication:** Secure Sign-in/Sign-up via Google and Email (powered by **Clerk**).
+- **Cloud Sync:** Automatically saves your workspace to the cloud (powered by **Supabase**). Access your code from any device.
+- **Persistence:** Local storage backup ensures you never lose work even if offline.
 
 ### ⚡ Multi-Language Support
-
 Execute code instantly via the [Piston API](https://github.com/engineer-man/piston). Supported languages include:
-
 - 🐍 **Python** (v3.10.0)
 - 🚀 **C++** (v10.2.0)
 - ☕ **Java** (v15.0.2)
@@ -31,16 +34,10 @@ Execute code instantly via the [Piston API](https://github.com/engineer-man/pist
 - 🟢 **Node.js** (v18.15.0)
 
 ### 🎨 Premium UI/UX
-
 - **Glassmorphism Design:** A sleek, dark-themed interface (`#0a0a0a`) with frosted glass effects.
 - **Resizable Panels:** Customize your workspace by dragging the divider between the code and preview panes.
-- **Monaco Editor:** Powered by the same engine as VS Code, providing syntax highlighting, bracket matching, and auto-formatting.
-- **Responsive:** Fully optimized for desktop and tablet usage.
-
-### 💾 Persistence & portability
-
-- **Auto-Save:** Never lose your work. Code is automatically saved to your browser's local storage.
-- **Download Code:** Export your projects as `.html` files (Web Mode) or source files like `.py`, `.cpp`, etc. (Logic Mode).
+- **Editor Customization:** Settings modal to adjust **Font Size**, **Word Wrap**, and **Minimap**.
+- **Smart Tools:** Includes a **Code Formatter** (Prettier) and **Console Cleaner**.
 
 ---
 
@@ -49,10 +46,11 @@ Execute code instantly via the [Piston API](https://github.com/engineer-man/pist
 - **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
+- **Auth:** [Clerk](https://clerk.com/)
+- **Database:** [Supabase](https://supabase.com/) (PostgreSQL)
 - **State Management:** Zustand (with Persist Middleware)
 - **Code Editor:** `@monaco-editor/react`
-- **UI Components:** `lucide-react`, `framer-motion`
-- **Layout:** `react-resizable-panels`
+- **UI Components:** `lucide-react`, `framer-motion`, `react-resizable-panels`
 - **Execution API:** [Piston API](https://emkc.org/)
 
 ---
@@ -62,35 +60,47 @@ Execute code instantly via the [Piston API](https://github.com/engineer-man/pist
 Follow these steps to run CodeCracker locally on your machine.
 
 ### Prerequisites
-
 - Node.js 18+ installed
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
-
    ```bash
-   git clone [https://github.com/your-username/codecracker.git](https://github.com/your-username/codecracker.git)
-   cd codecracker
-   ```
+   git clone [https://github.com/Adarsh234/code-cracker.git](https://github.com/Adarsh234/code-cracker.git)
+   cd code-cracker
+
 
 2. **Install dependencies**
-
 ```bash
 npm install
 
 ```
 
-3. **Run the development server**
 
+3. **Configure Environment Variables**
+Create a `.env.local` file in the root directory and add your keys:
+```env
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Supabase Database
+NEXT_PUBLIC_SUPABASE_URL=[https://your-project.supabase.co](https://your-project.supabase.co)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR...
+
+```
+
+
+4. **Run the development server**
 ```bash
 npm run dev
 
 ```
 
-4. **Open your browser**
-   Navigate to [Code_Cracker](https://code-cracker-five.vercel.app/) to see the app running.
+
+5. **Open your browser**
+Navigate to [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) to see the app running.
 
 ---
 
@@ -99,19 +109,23 @@ npm run dev
 ```bash
 src/
 ├── app/
-│   ├── page.tsx            # Landing Page
+│   ├── page.tsx            # Landing Page with Auth UI
+│   ├── layout.tsx          # Root Layout (Clerk Provider)
 │   └── editor/
 │       └── page.tsx        # Main Editor Layout
 ├── components/
-│   ├── Navbar.tsx          # Navigation & Mode Switcher
-│   ├── CodeEditor.tsx      # Monaco Editor Instance
+│   ├── Navbar.tsx          # Nav, Cloud Status, User Profile
+│   ├── CodeEditor.tsx      # Monaco Instance + Format Button
+│   ├── SettingsModal.tsx   # Editor Preferences (Font/Wrap)
 │   ├── WebPreview.tsx      # Live HTML Iframe
-│   ├── OutputPanel.tsx     # Logic Console Output
+│   ├── OutputPanel.tsx     # Console Output + Stdin Input
 │   └── FileTabs.tsx        # Dynamic Tab Bar
 ├── store/
-│   └── useCodeStore.ts     # Global State (Zustand)
-└── lib/
-    └── utils.ts            # Helper functions
+│   └── useCodeStore.ts     # Global State (Zustand + Supabase Logic)
+├── lib/
+│   ├── supabase.ts         # Supabase Client
+│   └── utils.ts            # Helpers
+└── middleware.ts           # Clerk Auth Middleware
 
 ```
 
@@ -137,14 +151,10 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 🙏 Acknowledgments
 
-- **Piston API** for the amazing code execution engine.
-- **Lucide** for the beautiful icon set.
-- **Vercel** for hosting infrastructure.
+* **Piston API** for the amazing code execution engine.
+* **Lucide** for the beautiful icon set.
+* **Clerk & Supabase** for powering the backend infrastructure.
 
 ---
 
 Made with ❤️ by [Adarsh](https://github.com/Adarsh234)
-
-```
-
-```
