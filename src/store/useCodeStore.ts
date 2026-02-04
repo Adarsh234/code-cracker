@@ -32,6 +32,7 @@ interface CodeStore {
   setLanguage: (lang: string) => void
   setActiveFile: (file: string) => void
   setStdin: (value: string) => void
+  clearOutput: () => void
   updateCode: (field: string, value: string) => void
   runCode: () => void
 }
@@ -131,6 +132,8 @@ export const useCodeStore = create<CodeStore>()(
       setLanguage: (language) => set({ language }),
       setActiveFile: (activeFile) => set({ activeFile }),
       setStdin: (stdin) => set({ stdin }),
+
+      clearOutput: () => set({ output: '' }),
 
       updateCode: (field, value) =>
         set((state) => ({ code: { ...state.code, [field]: value } })),
