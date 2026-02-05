@@ -66,9 +66,10 @@ Follow these steps to run CodeCracker locally on your machine.
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone [https://github.com/Adarsh234/code-cracker.git](https://github.com/Adarsh234/code-cracker.git)
+```bash
+git clone [https://github.com/Adarsh234/code-cracker.git](https://github.com/Adarsh234/code-cracker.git)
    cd code-cracker
+```
 
 
 2. **Install dependencies**
